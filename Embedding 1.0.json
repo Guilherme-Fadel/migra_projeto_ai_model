@@ -1,0 +1,2675 @@
+{
+  "name": "Embedding",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        160
+      ],
+      "id": "d24215fb-e8f4-4e0f-a6a1-75613e028c34",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "filename",
+                "value": "={{ $('Download File').item.json.name }}"
+              },
+              {
+                "name": "id",
+                "value": "={{ $('Download File').item.json.id }}"
+              },
+              {
+                "name": "gold",
+                "value": "false"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e26ae6ce-cfa9-4131-ad01-8d2d3de426a2",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        2624,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "chunkSize": 1300,
+        "chunkOverlap": 130,
+        "options": {}
+      },
+      "id": "152dd1e9-31ad-4fb9-94ad-7aa25000b4aa",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        2624,
+        800
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "collection_vectors_saude",
+        "embeddingBatchSize": 512,
+        "options": {}
+      },
+      "id": "d3497893-1b9b-4792-9666-bcc772dc4495",
+      "name": "Postgres PGVector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "position": [
+        2496,
+        384
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {}
+      },
+      "id": "bfb97bfa-cf9d-424e-941d-64febc5c9a64",
+      "name": "Download File",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1152,
+        288
+      ],
+      "typeVersion": 3,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "0ALNtIxf-GD_bUk9PVA",
+            "mode": "list",
+            "cachedResultName": "DOCUMENTAÇÃO IA",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/0ALNtIxf-GD_bUk9PVA"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1CPBz00GoVsjlS-no9XSpgf5Nz7X9IZvf",
+            "mode": "list",
+            "cachedResultName": "Arquivos tratados saude",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1CPBz00GoVsjlS-no9XSpgf5Nz7X9IZvf"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "id": "5fbd4fdd-d0b9-4f97-b77c-d69b4967dc07",
+      "name": "Search Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -1104,
+        336
+      ],
+      "typeVersion": 3,
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7b4e792b-ab6d-4b9b-88a1-d8e51bea6853",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "application/pdf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "344c820c-3185-48f3-8fa6-27c578a7db90",
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "document"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "165aaf20-4cf6-4491-87d0-d287e93ccd30",
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "docx"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "09b7d7c5-5353-4719-b4e2-072e4da39948",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "text/plain"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7235a9c9-3ebd-49a2-901f-2c024dcfa6b5",
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "audio/mpeg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "mp3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3c2b1d9e-5b94-42d4-84e2-0e6dc1e2fa76",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1504,
+        224
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "69872704-0835-49db-a824-e51660f660b6",
+      "name": "Extract from Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        1888,
+        368
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "createdTime"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        336
+      ],
+      "id": "d6952250-5593-4a6f-a701-fdd5f810649c",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "mode": "combineBySql",
+        "query": "SELECT *\nFROM input1\nCROSS JOIN input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -64,
+        320
+      ],
+      "id": "5fd54ab7-4c9d-4240-9aa3-10a18eb92c18",
+      "name": "Merge",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select created_date::date FROM collection_vectors_empresarial\ngroup by created_date::date\norder by created_date::date desc",
+        "options": {
+          "queryReplacement": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1216,
+        -96
+      ],
+      "id": "fa688eeb-f0ed-4a33-99b2-0b20ddfc90c4",
+      "name": "Execute a SQL query1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        896,
+        272
+      ],
+      "id": "0731ff6e-d0dc-40aa-b759-bba82de302bc",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT metadata->>'filename' AS filename FROM collection_vectors_empresarial\ngroup by filename \norder by filename desc\n",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1440,
+        -96
+      ],
+      "id": "193563b0-0fa8-4fd0-b17a-4624a03ad1b7",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -736,
+        336
+      ],
+      "id": "0ac96b0e-5237-48dc-923a-0a99715a3930",
+      "name": "Wait",
+      "webhookId": "c9ca170a-a881-46ed-875d-f047339d143f"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "collection_vectors_saude",
+          "mode": "list",
+          "cachedResultName": "collection_vectors_saude"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "created_date",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {
+          "outputColumns": [
+            "created_date"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -560,
+        160
+      ],
+      "id": "dc8800a3-1f5d-4045-b376-4098e248b0dd",
+      "name": "Select Created_Date",
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [items[0]];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        160
+      ],
+      "id": "c0ce9bd0-1261-4d86-9b17-eb3ce5487e7e",
+      "name": "Return Latest"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c6df441e-136f-4ad6-8178-6735d210ed1a",
+              "leftValue": "={{ $json.createdTime }}",
+              "rightValue": "={{ $json.newDate }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        112,
+        320
+      ],
+      "id": "9e324f3e-1510-4d01-b58a-06cc5578985a",
+      "name": "If Date >"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a738626-bcaa-40c4-905d-58b4bc3e23f3",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "d6047c5f-dc88-4d7a-9c2b-6b07f5e636a6",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "text/plain",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "f1a5b39e-868a-4845-abde-ea620c1c1f77",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "80ae7071-18dd-43a8-b01c-80908445fd8c",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/vnd.google-apps.document",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        288
+      ],
+      "id": "9bb63c4c-5f4c-45fb-a9d1-f65585a1ce0d",
+      "name": "Is a acceptable type?"
+    },
+    {
+      "parameters": {
+        "options": {
+          "batchSize": 512,
+          "stripNewLines": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2496,
+        624
+      ],
+      "id": "75b35113-4fb6-4ed8-8bce-b00f0813f725",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "zemFQIBElibYiXIs",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "subtractFromDate",
+        "magnitude": "={{ $('Select Created_Date').item.json.created_date }}",
+        "timeUnit": "hours",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        160
+      ],
+      "id": "3bd28aaf-5d66-4085-a2ea-96bb31441526",
+      "name": "Date & Time1"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1430239015830814821",
+          "mode": "list",
+          "cachedResultName": "MkBot",
+          "cachedResultUrl": "https://discord.com/channels/1430239015830814821"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1431243011848929422",
+          "mode": "list",
+          "cachedResultName": "logs",
+          "cachedResultUrl": "https://discord.com/channels/1430239015830814821/1431243011848929422"
+        },
+        "content": "Não foi encontrado nenhum arquivo com data superior o ultimo acréscimo de arquivos...",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        368,
+        96
+      ],
+      "id": "cb7b5887-dcdd-44e5-9988-402f9ca32b26",
+      "name": "Log Datas",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "770621482887282698",
+          "mode": "list",
+          "cachedResultName": "MKData",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1427304220616294400",
+          "mode": "list",
+          "cachedResultName": "bot-dúvida",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698/1427304220616294400"
+        },
+        "content": "=Arquivos sendo adicionados...",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        736,
+        80
+      ],
+      "id": "3833f8ba-9850-4d29-94b7-b6b6885c5d29",
+      "name": "Log Adicionando Arq.",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "770621482887282698",
+          "mode": "list",
+          "cachedResultName": "MKData",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1427304220616294400",
+          "mode": "list",
+          "cachedResultName": "bot-dúvida",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698/1427304220616294400"
+        },
+        "content": "=Todos os arquivos foram adicionados com sucesso!\n\nTotal arquivos: {{ $json.itemCount }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        96
+      ],
+      "id": "b3c47fc0-824d-4c60-a968-0c37fd2e6be6",
+      "name": "Log Adição Sucess",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "770621482887282698",
+          "mode": "list",
+          "cachedResultName": "MKData",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1427304220616294400",
+          "mode": "list",
+          "cachedResultName": "bot-dúvida",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698/1427304220616294400"
+        },
+        "content": "=Erro ao fazer download de arquivo!\nNome do Arquivo: {{ $json.name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        80
+      ],
+      "id": "319e0147-1aeb-4b0b-b927-0a4dbd0b2803",
+      "name": "Log erro download",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-thinking-exp",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash-thinking-exp"
+        },
+        "text": "Oque é passado no video?",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "0567cbfa-6e9e-4a19-bee6-bdc84aa3a124",
+      "name": "Analyze video",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Kxwe7P55holbvVrX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "0ALNtIxf-GD_bUk9PVA",
+            "mode": "list",
+            "cachedResultName": "DOCUMENTAÇÃO IA",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/0ALNtIxf-GD_bUk9PVA"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1-k5B_4lpAagTrk69J6wwSOYIhMJFF7Ig",
+            "mode": "list",
+            "cachedResultName": "MP4",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1-k5B_4lpAagTrk69J6wwSOYIhMJFF7Ig"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "id": "51da4850-cad9-4c02-9625-1b11e0bde94e",
+      "name": "Search Folder1",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -112,
+        -96
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "id": "b0c1fdd6-1d1a-41a9-8e00-613a4603c5a9",
+      "name": "Download File1",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        128,
+        -96
+      ],
+      "typeVersion": 3,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Descreva o documento analisando o contexto de texto e imagens.\nTraga informações importantes como parametrizações, módulos que serão afetados, não descarte nada.",
+        "inputType": "binary",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -112
+      ],
+      "id": "34cdd190-5b4f-45e3-92d4-682dbd222e81",
+      "name": "Analyze document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Kxwe7P55holbvVrX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Descreva o documento analisando o contexto de texto e imagens.\nTraga informações importantes como parametrizações, módulos que serão afetados, não descarte nada.\n\nUtilize a linguagem PT-BR",
+        "inputType": "binary",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        192
+      ],
+      "id": "f21b0a66-a8a9-401d-8669-b070f9e656f4",
+      "name": "Analyze document1",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4N4SoGdmODkZaTV7",
+          "name": "Google Gemini(PaLM) Api account 2 - LUCAS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "RESET DE TABELAS",
+        "height": 400,
+        "width": 1312
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        -336
+      ],
+      "typeVersion": 1,
+      "id": "9415169e-6333-42e8-9af8-984dcd2e272d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Testes\n",
+        "height": 208,
+        "width": 1072,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -208,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "787204ce-da13-4aee-9dad-09f6939aada9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Fluxo de Embedding",
+        "height": 1024,
+        "width": 4576,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        64
+      ],
+      "typeVersion": 1,
+      "id": "6db80a61-b595-4635-913d-1545d4595bde",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "filename",
+                "value": "={{ $('Download File2').item.json.name }}"
+              },
+              {
+                "name": "id",
+                "value": "={{ $('Download File2').item.json.id }}"
+              },
+              {
+                "name": "gold",
+                "value": "false"
+              }
+            ]
+          }
+        }
+      },
+      "id": "a027a557-4480-4ee7-bf20-14393b3848a0",
+      "name": "Default Data Loader1",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "position": [
+        2800,
+        1632
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "chunkSize": 1300,
+        "chunkOverlap": 130,
+        "options": {}
+      },
+      "id": "f22ae410-43ef-42a9-a8d2-1e2e97d2d09f",
+      "name": "Recursive Character Text Splitter1",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "position": [
+        2800,
+        1792
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "collection_vectors_empresarial",
+        "embeddingBatchSize": 512,
+        "options": {}
+      },
+      "id": "cdaffd3e-611c-48a3-baab-69984d6279ad",
+      "name": "Postgres PGVector Store1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "position": [
+        2688,
+        1408
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "id": "fce0b741-9b0c-4e02-bee3-30245d6a564c",
+      "name": "Download File2",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1360,
+        1328
+      ],
+      "typeVersion": 3,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "0ALNtIxf-GD_bUk9PVA",
+            "mode": "list",
+            "cachedResultName": "DOCUMENTAÇÃO IA",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/0ALNtIxf-GD_bUk9PVA"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1Aqwyd6_42ni8uY60ELlBgQ4K-viYZ-zL",
+            "mode": "list",
+            "cachedResultName": "Arquivos Tratados Empresarial",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1Aqwyd6_42ni8uY60ELlBgQ4K-viYZ-zL"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "id": "08f21e38-7d63-41a4-80cf-745aa832cab4",
+      "name": "Search Folder2",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        -1104,
+        1376
+      ],
+      "typeVersion": 3,
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "00abdf84-8865-44f5-96ee-9cff5d1fa4ae",
+      "name": "Schedule Trigger1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -1376,
+        336
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7b4e792b-ab6d-4b9b-88a1-d8e51bea6853",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "application/pdf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "344c820c-3185-48f3-8fa6-27c578a7db90",
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "document"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "165aaf20-4cf6-4491-87d0-d287e93ccd30",
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "docx"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "09b7d7c5-5353-4719-b4e2-072e4da39948",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "text/plain"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7235a9c9-3ebd-49a2-901f-2c024dcfa6b5",
+                    "leftValue": "={{$binary[\"data\"].mimeType}}",
+                    "rightValue": "audio/mpeg",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "mp3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6f2f811b-6a10-4bd7-9ce3-7ef1c0a2f696",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        1712,
+        1248
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "id": "901a42f3-9928-4bc2-ace7-499bf45f9f3b",
+      "name": "Extract from Text1",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        2096,
+        1408
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "createdTime"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        1376
+      ],
+      "id": "e9cb05a9-3025-4076-952e-d5e484c78d12",
+      "name": "Sort1"
+    },
+    {
+      "parameters": {
+        "mode": "combineBySql",
+        "query": "SELECT *\nFROM input1\nCROSS JOIN input2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -64,
+        1360
+      ],
+      "id": "33b44c7b-5f92-4206-8f3b-5636d3637590",
+      "name": "Merge1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        896,
+        1312
+      ],
+      "id": "21dfbe75-08a5-4d75-8292-1634b8964e2a",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -736,
+        1376
+      ],
+      "id": "24821eff-d2b4-4a0b-89a6-8350d20cae13",
+      "name": "Wait1",
+      "webhookId": "c9ca170a-a881-46ed-875d-f047339d143f"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "collection_vectors_empresarial",
+          "mode": "list",
+          "cachedResultName": "collection_vectors_empresarial"
+        },
+        "limit": 1,
+        "sort": {
+          "values": [
+            {
+              "column": "created_date",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {
+          "outputColumns": [
+            "created_date"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -560,
+        1200
+      ],
+      "id": "769c722d-173f-4fc0-b944-2cf0d72f5b7f",
+      "name": "Select Created_Date1",
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [items[0]];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        1200
+      ],
+      "id": "c3001543-7718-4704-91f1-f72bbbae5cb4",
+      "name": "Return Latest1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c6df441e-136f-4ad6-8178-6735d210ed1a",
+              "leftValue": "={{ $json.createdTime }}",
+              "rightValue": "={{ $json.newDate }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        1360
+      ],
+      "id": "06f764e4-755c-4833-9037-47fb4afdb787",
+      "name": "If Date >1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a738626-bcaa-40c4-905d-58b4bc3e23f3",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "d6047c5f-dc88-4d7a-9c2b-6b07f5e636a6",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "text/plain",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "f1a5b39e-868a-4845-abde-ea620c1c1f77",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              }
+            },
+            {
+              "id": "80ae7071-18dd-43a8-b01c-80908445fd8c",
+              "leftValue": "={{ $json.mimeType }}",
+              "rightValue": "application/vnd.google-apps.document",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        1328
+      ],
+      "id": "86d55674-8a87-4dc2-9378-4d8fb5a8ce4c",
+      "name": "Is a acceptable type?1"
+    },
+    {
+      "parameters": {
+        "operation": "subtractFromDate",
+        "magnitude": "={{ $('Select Created_Date1').item.json.created_date }}",
+        "timeUnit": "hours",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        1200
+      ],
+      "id": "db69d70b-6a3a-40aa-a346-6ff34c41e816",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "1430239015830814821",
+          "mode": "list",
+          "cachedResultName": "MkBot",
+          "cachedResultUrl": "https://discord.com/channels/1430239015830814821"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1432415426729480294",
+          "mode": "list",
+          "cachedResultName": "logs-erp",
+          "cachedResultUrl": "https://discord.com/channels/1430239015830814821/1432415426729480294"
+        },
+        "content": "Não foi encontrado nenhum arquivo com data superior o ultimo acréscimo de arquivos...",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        448,
+        1136
+      ],
+      "id": "f349bc6d-cd3c-4e1e-9bb6-c38974923b6e",
+      "name": "Log Datas1",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "770621482887282698",
+          "mode": "list",
+          "cachedResultName": "MKData",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1433070924114169997",
+          "mode": "list",
+          "cachedResultName": "bot-dúvida",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698/1433070924114169997"
+        },
+        "content": "=Arquivos sendo adicionados...",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        736,
+        1120
+      ],
+      "id": "9246e59c-a0b1-4575-97f6-952c479d771f",
+      "name": "Log Adicionando Arq.1",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "770621482887282698",
+          "mode": "list",
+          "cachedResultName": "MKData",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1433070924114169997",
+          "mode": "list",
+          "cachedResultName": "bot-dúvida",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698/1433070924114169997"
+        },
+        "content": "=Todos os arquivos foram adicionados com sucesso!\n\nTotal arquivos: {{ $json.itemCount }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        1152
+      ],
+      "id": "32282aef-9947-42e2-9ea0-a08199d39f1e",
+      "name": "Log Adição Sucess1",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "guildId": {
+          "__rl": true,
+          "value": "770621482887282698",
+          "mode": "list",
+          "cachedResultName": "MKData",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "1433070924114169997",
+          "mode": "list",
+          "cachedResultName": "bot-dúvida",
+          "cachedResultUrl": "https://discord.com/channels/770621482887282698/1433070924114169997"
+        },
+        "content": "=Erro ao fazer download de arquivo!\nNome do Arquivo: {{ $json.name }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        1120
+      ],
+      "id": "db8df14e-d867-47d8-8a59-563b500821ae",
+      "name": "Log erro download1",
+      "webhookId": "038adf8f-c834-4f6f-b9c7-7867e2d4b7a1",
+      "executeOnce": true,
+      "credentials": {
+        "discordBotApi": {
+          "id": "6lbl75PWPKlzpGM8",
+          "name": "Discord Bot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Descreva o documento analisando o contexto de texto e imagens.\nTraga informações importantes como parametrizações, módulos que serão afetados, não descarte nada.\n\nUtilize a linguagem PT-BR",
+        "inputType": "binary",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        1216
+      ],
+      "id": "591352be-ff7c-4801-9229-3c2b42bd03b8",
+      "name": "Analyze document2",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4N4SoGdmODkZaTV7",
+          "name": "Google Gemini(PaLM) Api account 2 - LUCAS"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Fluxo de Embedding",
+        "height": 1024,
+        "width": 4576,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1520,
+        1088
+      ],
+      "typeVersion": 1,
+      "id": "7a58a75d-96bf-4560-a7dc-baf860d10c4b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "collection_vectors_empresarial",
+          "mode": "list",
+          "cachedResultName": "collection_vectors_empresarial"
+        },
+        "deleteCommand": "delete",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -992,
+        -96
+      ],
+      "id": "b144c72a-2055-41c0-9aa2-3141e9ba8164",
+      "name": "Delete table or rows",
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "aa48bf23-9ca1-4fd2-ab75-a8b1760fe036",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -1360,
+        1264
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1CPBz00GoVsjlS-no9XSpgf5Nz7X9IZvf",
+          "mode": "list",
+          "cachedResultName": "Arquivos tratados saude",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1CPBz00GoVsjlS-no9XSpgf5Nz7X9IZvf"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        528
+      ],
+      "id": "7e6ad577-9181-47d5-aea2-a9f460eee59d",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1Aqwyd6_42ni8uY60ELlBgQ4K-viYZ-zL",
+          "mode": "list",
+          "cachedResultName": "Arquivos Tratados Empresarial",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Aqwyd6_42ni8uY60ELlBgQ4K-viYZ-zL"
+        },
+        "event": "fileCreated",
+        "options": {
+          "fileType": "all"
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        1456
+      ],
+      "id": "7efac7cb-7ab0-4230-9330-aef829b4ca21",
+      "name": "Google Drive Trigger1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jwKGpiAv7AoKr7BC",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bdabe9ec-3377-4b97-a4dc-8e14943d89f8",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": ".mp4",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        1344
+      ],
+      "id": "a4f51b81-3fc8-4d75-91db-b0ee0f9caeec",
+      "name": "Isn't Mp4?1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bdabe9ec-3377-4b97-a4dc-8e14943d89f8",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": ".mp4",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        304
+      ],
+      "id": "1f7e1e51-a049-47ab-9001-0bcd6cebbedd",
+      "name": "Isn't Mp4?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select created_date::date FROM collection_vectors_saude\ngroup by created_date::date\norder by created_date::date desc",
+        "options": {
+          "queryReplacement": ""
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1216,
+        -272
+      ],
+      "id": "9dbd6d75-2217-43b8-806f-aa33eb53f1ec",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT metadata->>'filename' AS filename FROM collection_vectors_saude\ngroup by filename \norder by filename desc\n",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1440,
+        -272
+      ],
+      "id": "81601db9-5151-425a-bcba-c2d37d23880b",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteTable",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "collection_vectors_saude",
+          "mode": "list",
+          "cachedResultName": "collection_vectors_saude"
+        },
+        "deleteCommand": "delete",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -992,
+        -272
+      ],
+      "id": "93b96467-b91f-474d-9663-b2829e582d39",
+      "name": "Delete table or rows1",
+      "credentials": {
+        "postgres": {
+          "id": "KL0UgBRNLEDVnJXF",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtém todos os itens do nó anterior\nconst items = $items(\"Is a acceptable type?1\", 0);\n\n// Conta quantos itens foram retornados\nconst itemCount = items.length;\n\n// Retorna o resultado como um novo item\nreturn [\n  {\n    json: {\n      itemCount: itemCount\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        1152
+      ],
+      "id": "d8ca2491-cdbc-4f46-8c52-adf1ce5e5a0d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtém todos os itens do nó anterior\nconst items = $items(\"Is a acceptable type?\", 0);\n\n// Conta quantos itens foram retornados\nconst itemCount = items.length;\n\n// Retorna o resultado como um novo item\nreturn [\n  {\n    json: {\n      itemCount: itemCount\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        96
+      ],
+      "id": "cf4de83f-773e-43ce-8fec-ef2816584d8c",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "batchSize": 512,
+          "stripNewLines": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2688,
+        1632
+      ],
+      "id": "5c355c19-cf5f-46d7-a1a4-e5e50acee37f",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "zemFQIBElibYiXIs",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "isArtificialRecoveredEventItem": true
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Analyze document1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze document1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze document1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log erro download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Folder": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from Text": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If Date >",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Select Created_Date",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Select Created_Date": {
+      "main": [
+        [
+          {
+            "node": "Return Latest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Latest": {
+      "main": [
+        [
+          {
+            "node": "Date & Time1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Date >": {
+      "main": [
+        [
+          {
+            "node": "Isn't Mp4?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Is a acceptable type?": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Adicionando Arq.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Folder1": {
+      "main": [
+        [
+          {
+            "node": "Download File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File1": {
+      "main": [
+        [
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        []
+      ]
+    },
+    "Analyze document1": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File2": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log erro download1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Folder2": {
+      "main": [
+        [
+          {
+            "node": "Sort1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Search Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Analyze document2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze document2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze document2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract from Text1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Extract from Text1": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "If Date >1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Select Created_Date1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Select Created_Date1": {
+      "main": [
+        [
+          {
+            "node": "Return Latest1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Return Latest1": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Date >1": {
+      "main": [
+        [
+          {
+            "node": "Isn't Mp4?1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Is a acceptable type?1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Adicionando Arq.1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document2": {
+      "main": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search Folder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Search Folder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Isn't Mp4?1": {
+      "main": [
+        [
+          {
+            "node": "Is a acceptable type?1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Isn't Mp4?": {
+      "main": [
+        [
+          {
+            "node": "Is a acceptable type?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Log Adição Sucess1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Log Adição Sucess",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7e51d2c3-2252-448e-913d-41866b213658",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ca6e831535e90cdf62e618456a70a3d7c09a1147312cc436b27a5a255d6c917b"
+  },
+  "id": "uaFZiLOjCZmlz3E3",
+  "tags": [
+    {
+      "updatedAt": "2025-10-24T13:22:43.395Z",
+      "createdAt": "2025-10-24T13:22:43.395Z",
+      "id": "A07qvOv3SdyYCdhC",
+      "name": "Current"
+    }
+  ]
+}
